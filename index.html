@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Responsive Valentine Photo Booth</title>
+<style>
+body {
+  font-family: 'Arial', sans-serif;
+  text-align: center;
+  background: linear-gradient(to bottom, #ffe6f0, #441044);
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Video container */
+.video-container {
+  position: relative;
+  width: 90%;
+  max-width: 360px;
+  margin-bottom: 12px;
+}
+
+video, #frameOverlay {
+  width: 100%;
+  border-radius: 16px;
+}
+
+#frameOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* Toolbar buttons */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+button:hover {
+  transform: scale(1.05);
+}
+#snapBtn { background: #ff8fb1; color: white; }
+#retakeBtn { background: #ffa3c5; color: white; }
+#editStripBtn { background: #ff69b4; color: white; }
+#downloadBtn { background: #ff147a; color: white; }
+
+/* Filters */
+#filters {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-swatch {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid #fff;
+}
+
+/* Preview thumbnails */
+#previewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.preview-wrapper {
+  width: 70px;
+  height: 90px;
+  border-radius: 8px;
+  overflow: hidden;
+  background:#fff;
+}
+.preview-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Edit panel */
+#editPanel {
+  display: none;
+  position: fixed;
+  top:50%;
+  left:50%;
+  transform: translate(-50%,-50%);
+  background: #fff;
+  color:#000;
+  padding:20px;
+  border-radius:16px;
+  z-index:100;
+  width: 380px;
+  max-width: 90%;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  font-family: 'Arial', sans-serif;
+}
+
+#editPanel h3 {
+  margin-top:0;
+  font-size:20px;
+  color:#ff147a;
+}
+
+#editPanel label {
+  display:block;
+  margin-top:12px;
+  text-align:left;
+  font-weight:bold;
+}
+
+#editPanel select, #editPanel input {
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+#editPanel button {
+  margin-top:12px;
+  width:48%;
+  border-radius:12px;
+  padding:10px;
+  font-weight:bold;
+  background:#ff8fb1;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+#editPanel button:hover {
+  transform: scale(1.05);
+}
+
+/* Strip preview in edit panel */
+#stripPreviewContainer {
+  margin-top:16px;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid #ccc;
+  width:100%;
+  height:180px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#fdfdfd;
+}
+
+#stripPreviewCanvas {
+  max-width:100%;
+  max-height:100%;
+  border-radius:12px;
+}
+
+/* Mobile responsiveness */
+@media(max-width: 500px) {
+  #editPanel {
+    width: 90%;
+    padding:16px;
+  }
+  #stripPreviewCanvas {
+    max-height:150px;
+  }
+  .preview-wrapper {
+    width: 60px;
+    height: 80px;
+  }
+}
+</style>
+</head>
+<body>
+
+<h2>Valentine Photo Booth</h2>
+
+<div class="video-container">
+  <video id="video" autoplay playsinline></video>
+  <img id="frameOverlay" src="" alt="">
+</div>
+
+<div class="toolbar">
+  <button id="snapBtn" disabled>Take Photo (1 / 4)</button>
+  <button id="retakeBtn">Retake</button>
+  <button id="editStripBtn">Edit Strip</button>
+  <button id="downloadBtn">Download Strip</button>
+</div>
+
+<div id="filters">
+  <div class="filter-swatch" data-filter="none" style="background:#fff"></div>
+  <div class="filter-swatch" data-filter="grayscale(100%)" style="background:#aaa"></div>
+  <div class="filter-swatch" data-filter="sepia(100%)" style="background:#f4e1c1"></div>
+  <div class="filter-swatch" data-filter="saturate(150%)" style="background:#ff9fc1"></div>
+  <div class="filter-swatch" data-filter="contrast(120%)" style="background:#ffb3d9"></div>
+</div>
+
+<div id="previewContainer"></div>
+
+<!-- Modern Edit Panel -->
+<div id="editPanel">
+  <h3>Edit Strip</h3>
+  <label>Strip Style
+    <select id="styleSelect">
+      <option value="classic">Classic White</option>
+      <option value="pink">Soft Pink</option>
+      <option value="vintage">Vintage</option>
+      <option value="polaroid">Polaroid</option>
+    </select>
+  </label>
+  <label>Caption / Message
+    <input type="text" id="captionInput" placeholder="Happy Valentine!">
+  </label>
+  <label>
+    <input type="checkbox" id="frameToggle" checked> Show Frame Overlay
+  </label>
+
+  <div id="stripPreviewContainer">
+    <canvas id="stripPreviewCanvas"></canvas>
+  </div>
+
+  <div style="text-align:right;">
+    <button id="cancelEdit">Cancel</button>
+    <button id="saveEdit">Save</button>
+  </div>
+</div>
+
+<script>
+// JS logic (same as before)
+const video=document.getElementById("video");
+const frameOverlay=document.getElementById("frameOverlay");
+const snapBtn=document.getElementById("snapBtn");
+const retakeBtn=document.getElementById("retakeBtn");
+const editStripBtn=document.getElementById("editStripBtn");
+const downloadBtn=document.getElementById("downloadBtn");
+const previewContainer=document.getElementById("previewContainer");
+const filterSwatches=document.querySelectorAll(".filter-swatch");
+
+const editPanel=document.getElementById("editPanel");
+const styleSelect=document.getElementById("styleSelect");
+const captionInput=document.getElementById("captionInput");
+const frameToggle=document.getElementById("frameToggle");
+const cancelEdit=document.getElementById("cancelEdit");
+const saveEdit=document.getElementById("saveEdit");
+const stripPreviewCanvas=document.getElementById("stripPreviewCanvas");
+
+let photos=[];
+const MAX_PHOTOS=4;
+let currentFilter="none";
+let stripOptions={style:"classic", caption:"", frame:true};
+
+// Start camera
+async function startCamera(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}, audio:false});
+    video.srcObject=stream;
+  } catch(err){ alert("Camera access failed: "+err);}
+}
+video.addEventListener("loadedmetadata", ()=>{snapBtn.disabled=false;});
+
+// Filters
+filterSwatches.forEach(swatch=>{
+  swatch.addEventListener("click", ()=>{
+    currentFilter=swatch.dataset.filter;
+    video.style.filter=currentFilter;
+  });
+});
+
+// Snap
+snapBtn.addEventListener("click", ()=>{
+  if(photos.length>=MAX_PHOTOS) return;
+  const canvas=document.createElement("canvas");
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  const ctx=canvas.getContext("2d");
+  ctx.filter=currentFilter;
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+  const dataUrl=canvas.toDataURL("image/png");
+  photos.push({data:dataUrl});
+  const wrapper=document.createElement("div");
+  wrapper.className="preview-wrapper";
+  const img=document.createElement("img");
+  img.src=dataUrl;
+  wrapper.appendChild(img);
+  previewContainer.appendChild(wrapper);
+  snapBtn.innerText=`Take Photo (${photos.length+1}/4)`;
+  if(photos.length===MAX_PHOTOS){ snapBtn.disabled=true; snapBtn.innerText="All photos taken";}
+});
+
+// Retake
+retakeBtn.addEventListener("click", ()=>{
+  photos=[];
+  previewContainer.innerHTML="";
+  snapBtn.disabled=false;
+  snapBtn.innerText="Take Photo (1 / 4)";
+});
+
+// Edit panel open
+editStripBtn.addEventListener("click", ()=>{
+  if(photos.length===0){ alert("Take photos first!"); return;}
+  stripOptions.style=styleSelect.value;
+  stripOptions.caption=captionInput.value;
+  stripOptions.frame=frameToggle.checked;
+  editPanel.style.display="block";
+  drawStripPreview();
+});
+
+// Cancel / Save
+cancelEdit.addEventListener("click",()=>{ editPanel.style.display="none"; });
+saveEdit.addEventListener("click",()=>{
+  stripOptions.style=styleSelect.value;
+  stripOptions.caption=captionInput.value;
+  stripOptions.frame=frameToggle.checked;
+  editPanel.style.display="none";
+});
+
+// Draw strip preview
+function drawStripPreview(){
+  const canvas=stripPreviewCanvas;
+  const ctx=canvas.getContext("2d");
+  const maxWidth=340;
+  canvas.width=maxWidth;
+  const spacing=8;
+  let totalHeight=spacing*(photos.length-1);
+  const imgs=photos.map(p=>{ const img=new Image(); img.src=p.data; return img;});
+  let loadedCount=0;
+  imgs.forEach(img=>{
+    img.onload=()=>{
+      img.scaledHeight=(maxWidth/img.width)*img.height;
+      totalHeight+=img.scaledHeight+15;
+      loadedCount++;
+      if(loadedCount===imgs.length){
+        canvas.height=totalHeight+30;
+        ctx.fillStyle="#fff";
+        if(stripOptions.style==="pink") ctx.fillStyle="#ffe6f0";
+        if(stripOptions.style==="vintage") ctx.fillStyle="#f2e6d9";
+        if(stripOptions.style==="polaroid") ctx.fillStyle="#fdfdfd";
+        ctx.fillRect(0,0,maxWidth,canvas.height);
+        let y=0;
+        imgs.forEach(img2=>{
+          ctx.drawImage(img2,0,y,maxWidth,img2.scaledHeight);
+          y+=img2.scaledHeight+spacing+15;
+        });
+        ctx.fillStyle="#ff147a";
+        ctx.textAlign="center";
+        ctx.fillText(stripOptions.caption,maxWidth/2,totalHeight);
+        ctx.fillStyle="#555";
+        ctx.fillText(new Date().toLocaleString(),maxWidth/2,canvas.height-10);
+      }
+    }
+  });
+}
+
+[styleSelect, captionInput, frameToggle].forEach(el=>{ el.addEventListener("input", drawStripPreview); });
+
+// Download
+downloadBtn.addEventListener("click", ()=>{
+  if(photos.length===0){ alert("Take photos first!"); return;}
+  stripOptions.style=styleSelect.value;
+  stripOptions.caption=captionInput.value;
+  stripOptions.frame=frameToggle.checked;
+
+  const maxWidth=360; const spacing=10;
+  let totalHeight=spacing*(photos.length-1);
+  const imgs=photos.map(p=>{ const img=new Image(); img.src=p.data; return img;});
+  let loadedCount=0;
+  imgs.forEach(img=>{
+    img.onload=()=>{
+      img.scaledHeight=(maxWidth/img.width)*img.height;
+      totalHeight+=img.scaledHeight+20;
+      loadedCount++;
+      if(loadedCount===imgs.length){
+        totalHeight+=30;
+        const canvas=document.createElement("canvas");
+        canvas.width=maxWidth; canvas.height=totalHeight;
+        const ctx=canvas.getContext("2d");
+        ctx.fillStyle="#fff";
+        if(stripOptions.style==="pink") ctx.fillStyle="#ffe6f0";
+        if(stripOptions.style==="vintage") ctx.fillStyle="#f2e6d9";
+        if(stripOptions.style==="polaroid") ctx.fillStyle="#fdfdfd";
+        ctx.fillRect(0,0,maxWidth,totalHeight);
+        let y=0;
+        imgs.forEach(img2=>{
+          ctx.drawImage(img2,0,y,maxWidth,img2.scaledHeight);
+          y+=img2.scaledHeight+spacing+20;
+        });
+        ctx.fillStyle="#ff147a";
+        ctx.textAlign="center";
+        ctx.fillText(stripOptions.caption,maxWidth/2,totalHeight);
+        ctx.fillStyle="#555";
+        ctx.fillText(new Date().toLocaleString(),maxWidth/2,canvas.height-10);
+        const link=document.createElement("a"); link.download="valentine_strip.png";
+        link.href=canvas.toDataURL("image/png"); link.click();
+      }
+    }
+  });
+});
+
+startCamera();
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forever 💖</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>💖 Our Love Journey 💖</h1>
+    <p>Play the games to unlock our secret message 💌</p>
+    <div class="progress">
+      <div id="bar"></div>
+    </div>
+  </header>
+
+  <!-- GAME 1: Reach Me Maze -->
+  <section class="game-card" id="g1">
+    <h2>🧩 Game 1: Reach Me</h2>
+    <p>Use arrow keys to reach 💖 while avoiding walls!</p>
+    <canvas id="mazeCanvas" width="300" height="300"></canvas>
+  </section>
+
+  <!-- GAME 2: Lunch Break Love -->
+  <section class="game-card hidden" id="g2">
+    <h2>🍱 Game 2: Lunch Break Love</h2>
+    <p>Move your plate with your mouse and catch the falling ingredients ❤️</p>
+    <canvas id="kitchenCanvas" width="400" height="300"></canvas>
+    <div class="plate" id="plate">🍽️</div>
+  </section>
+
+  <!-- GAME 3: 4 AM Call -->
+  <section class="game-card hidden" id="g3">
+    <h2>🌙 Game 3: 4 AM Call</h2>
+    <p>Click the hearts before they disappear to keep the call alive ✨</p>
+    <canvas id="callCanvas" width="400" height="300"></canvas>
+    <div class="clock" id="clock">12:00 AM</div>
+  </section>
+
+  <!-- FINAL LOCK -->
+  <section class="game-card hidden" id="final">
+    <h2>🔒 Final Lock</h2>
+    <p>What stays, repeats, and outlives time?</p>
+    <input id="pwd" placeholder="Type your answer">
+    <br>
+    <button onclick="unlock()">Unlock</button>
+    <p id="secret" class="hidden">
+      💌 From finding your way back,<br>
+      to caring every day,<br>
+      to losing track of time…<br><br>
+      That’s not temporary.<br>
+      That’s <b>FOREVER</b> ❤️
+    </p>
+  </section>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+  color: #333;
+  text-align: center;
+}
+
+.container {
+  width: 90%;
+  max-width: 900px;
+  margin: auto;
+  padding: 20px 0;
+}
+
+header h1 {
+  font-size: 2.8rem;
+  margin-bottom: 5px;
+}
+
+header p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.progress {
+  width: 100%;
+  background: #ffe0e9;
+  height: 18px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
+
+#bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff6f91, #ff9671);
+  transition: width 0.5s;
+}
+
+.game-card {
+  background: #fff;
+  border-radius: 25px;
+  padding: 25px;
+  margin: 25px 0;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  animation: fadeUp 1s ease;
+}
+
+.hidden { display: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+canvas {
+  border: 2px solid #ff6f91;
+  border-radius: 15px;
+  margin-top: 15px;
+  background: #fff0f5;
+}
+
+.plate {
+  margin-top: 15px;
+  font-size: 50px;
+  min-height: 60px;
+}
+
+.clock { font-size: 40px; margin: 20px 0;}
+
+input {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #ff6f91;
+  color: white;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+button:hover { transform: scale(1.05); transition: 0.2s;}
