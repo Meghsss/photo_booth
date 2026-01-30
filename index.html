@@ -78,6 +78,7 @@ button:hover {
   border-radius: 8px;
   cursor: pointer;
   border: 2px solid #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.3);
 }
 
 /* Preview thumbnails */
@@ -85,7 +86,7 @@ button:hover {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   margin-top: 12px;
 }
 
@@ -95,11 +96,13 @@ button:hover {
   border-radius: 8px;
   overflow: hidden;
   background:#fff;
+  border: 2px solid #ffb3d9;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 .preview-wrapper img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 /* Edit panel */
@@ -165,7 +168,7 @@ button:hover {
   overflow:hidden;
   border:1px solid #ccc;
   width:100%;
-  height:180px;
+  height:auto;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -204,7 +207,7 @@ button:hover {
 </div>
 
 <div class="toolbar">
-  <button id="snapBtn" disabled>Take Photo (1 / 4)</button>
+  <button id="snapBtn" disabled>Photo 1 of 4</button>
   <button id="retakeBtn">Retake</button>
   <button id="editStripBtn">Edit Strip</button>
   <button id="downloadBtn">Download Strip</button>
@@ -220,7 +223,6 @@ button:hover {
 
 <div id="previewContainer"></div>
 
-<!-- Modern Edit Panel -->
 <div id="editPanel">
   <h3>Edit Strip</h3>
   <label>Strip Style
@@ -249,7 +251,6 @@ button:hover {
 </div>
 
 <script>
-// JS logic (same as before)
 const video=document.getElementById("video");
 const frameOverlay=document.getElementById("frameOverlay");
 const snapBtn=document.getElementById("snapBtn");
@@ -272,7 +273,7 @@ const MAX_PHOTOS=4;
 let currentFilter="none";
 let stripOptions={style:"classic", caption:"", frame:true};
 
-// Start camera
+// Camera start
 async function startCamera(){
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}, audio:false});
@@ -300,13 +301,15 @@ snapBtn.addEventListener("click", ()=>{
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
   const dataUrl=canvas.toDataURL("image/png");
   photos.push({data:dataUrl});
+  
   const wrapper=document.createElement("div");
   wrapper.className="preview-wrapper";
   const img=document.createElement("img");
   img.src=dataUrl;
   wrapper.appendChild(img);
   previewContainer.appendChild(wrapper);
-  snapBtn.innerText=`Take Photo (${photos.length+1}/4)`;
+  
+  snapBtn.innerText=`Photo ${photos.length+1} of 4`;
   if(photos.length===MAX_PHOTOS){ snapBtn.disabled=true; snapBtn.innerText="All photos taken";}
 });
 
@@ -315,10 +318,15 @@ retakeBtn.addEventListener("click", ()=>{
   photos=[];
   previewContainer.innerHTML="";
   snapBtn.disabled=false;
-  snapBtn.innerText="Take Photo (1 / 4)";
+  snapBtn.innerText="Photo 1 of 4";
 });
 
-// Edit panel open
+// Frame toggle dynamic
+frameToggle.addEventListener("change", ()=>{
+  frameOverlay.style.display = frameToggle.checked ? "block" : "none";
+});
+
+// Edit panel
 editStripBtn.addEventListener("click", ()=>{
   if(photos.length===0){ alert("Take photos first!"); return;}
   stripOptions.style=styleSelect.value;
@@ -328,7 +336,6 @@ editStripBtn.addEventListener("click", ()=>{
   drawStripPreview();
 });
 
-// Cancel / Save
 cancelEdit.addEventListener("click",()=>{ editPanel.style.display="none"; });
 saveEdit.addEventListener("click",()=>{
   stripOptions.style=styleSelect.value;
@@ -342,7 +349,6 @@ function drawStripPreview(){
   const canvas=stripPreviewCanvas;
   const ctx=canvas.getContext("2d");
   const maxWidth=340;
-  canvas.width=maxWidth;
   const spacing=8;
   let totalHeight=spacing*(photos.length-1);
   const imgs=photos.map(p=>{ const img=new Image(); img.src=p.data; return img;});
@@ -353,22 +359,27 @@ function drawStripPreview(){
       totalHeight+=img.scaledHeight+15;
       loadedCount++;
       if(loadedCount===imgs.length){
-        canvas.height=totalHeight+30;
+        canvas.height=totalHeight+40;
         ctx.fillStyle="#fff";
         if(stripOptions.style==="pink") ctx.fillStyle="#ffe6f0";
         if(stripOptions.style==="vintage") ctx.fillStyle="#f2e6d9";
         if(stripOptions.style==="polaroid") ctx.fillStyle="#fdfdfd";
         ctx.fillRect(0,0,maxWidth,canvas.height);
-        let y=0;
+        
+        let y=10;
         imgs.forEach(img2=>{
           ctx.drawImage(img2,0,y,maxWidth,img2.scaledHeight);
           y+=img2.scaledHeight+spacing+15;
         });
+
         ctx.fillStyle="#ff147a";
+        ctx.font = "18px Arial";
         ctx.textAlign="center";
-        ctx.fillText(stripOptions.caption,maxWidth/2,totalHeight);
+        ctx.fillText(stripOptions.caption,maxWidth/2,y+15);
+
         ctx.fillStyle="#555";
-        ctx.fillText(new Date().toLocaleString(),maxWidth/2,canvas.height-10);
+        ctx.font = "12px Arial";
+        ctx.fillText(new Date().toLocaleString(),maxWidth/2,y+35);
       }
     }
   });
@@ -393,7 +404,7 @@ downloadBtn.addEventListener("click", ()=>{
       totalHeight+=img.scaledHeight+20;
       loadedCount++;
       if(loadedCount===imgs.length){
-        totalHeight+=30;
+        totalHeight+=40;
         const canvas=document.createElement("canvas");
         canvas.width=maxWidth; canvas.height=totalHeight;
         const ctx=canvas.getContext("2d");
@@ -402,18 +413,23 @@ downloadBtn.addEventListener("click", ()=>{
         if(stripOptions.style==="vintage") ctx.fillStyle="#f2e6d9";
         if(stripOptions.style==="polaroid") ctx.fillStyle="#fdfdfd";
         ctx.fillRect(0,0,maxWidth,totalHeight);
-        let y=0;
+        let y=10;
         imgs.forEach(img2=>{
           ctx.drawImage(img2,0,y,maxWidth,img2.scaledHeight);
           y+=img2.scaledHeight+spacing+20;
         });
         ctx.fillStyle="#ff147a";
+        ctx.font = "18px Arial";
         ctx.textAlign="center";
-        ctx.fillText(stripOptions.caption,maxWidth/2,totalHeight);
+        ctx.fillText(stripOptions.caption,maxWidth/2,y+15);
         ctx.fillStyle="#555";
-        ctx.fillText(new Date().toLocaleString(),maxWidth/2,canvas.height-10);
-        const link=document.createElement("a"); link.download="valentine_strip.png";
-        link.href=canvas.toDataURL("image/png"); link.click();
+        ctx.font = "12px Arial";
+        ctx.fillText(new Date().toLocaleString(),maxWidth/2,y+35);
+
+        const link=document.createElement("a"); 
+        link.download="valentine_strip.png";
+        link.href=canvas.toDataURL("image/png"); 
+        link.click();
       }
     }
   });
